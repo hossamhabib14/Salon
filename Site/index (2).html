@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صالون الحلاقة - حجز مواعيد</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .date {
+            font-size: 18px;
+            margin-top: 10px;
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .time-slot {
+            background: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+
+        .time-slot:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .time-slot.booked {
+            background: #c0392b;
+            color: white;
+            cursor: not-allowed;
+        }
+
+        .time-slot.available {
+            background: #27ae60;
+            color: white;
+        }
+
+        .booking-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        button {
+            background: #2980b9;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #1e6b8c;
+        }
+
+        @media (max-width: 768px) {
+            .time-slots {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>صالون الحلاقة الفاخر</h1>
+            <p class="date" id="currentDate"></p>
+            <p>اختر وقتًا مناسبًا من المواعيد المتاحة</p>
+        </div>
+
+        <div class="time-slots" id="timeSlots">
+            <!-- المواعيد ستضاف هنا عبر JavaScript -->
+        </div>
+    </div>
+
+    <div class="booking-modal" id="bookingModal">
+        <div class="modal-content">
+            <h2>اكمل بيانات الحجز</h2>
+            <form id="bookingForm">
+                <div class="form-group">
+                    <label>الاسم بالكامل:</label>
+                    <input type="text" required>
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف:</label>
+                    <input type="tel" required>
+                </div>
+                <button type="submit">تأكيد الحجز</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        let timeSlots = [];
+        const startTime = 9;
+        const endTime = 21;
+        const interval = 30;
+
+        function generateTimeSlots() {
+            const container = document.getElementById('timeSlots');
+            for (let hour = startTime; hour < endTime; hour++) {
+                for (let minute = 0; minute < 60; minute += interval) {
+                    const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                    const isBooked = localStorage.getItem(time) !== null;
+
+                    const slot = document.createElement('div');
+                    slot.className = `time-slot ${isBooked ? 'booked' : 'available'}`;
+                    slot.textContent = time;
+                    slot.dataset.time = time;
+                    
+                    if (!isBooked) {
+                        slot.onclick = () => openBookingModal(time);
+                    }
+
+                    container.appendChild(slot);
+                }
+            }
+        }
+
+        function openBookingModal(time) {
+            const modal = document.getElementById('bookingModal');
+            modal.style.display = 'flex';
+            modal.dataset.selectedTime = time;
+        }
+
+        document.getElementById('bookingForm').onsubmit = function(e) {
+            e.preventDefault();
+            const time = document.getElementById('bookingModal').dataset.selectedTime;
+            localStorage.setItem(time, 'booked');
+            document.getElementById('bookingModal').style.display = 'none';
+            window.location.reload();
+        }
+
+        window.onload = generateTimeSlots;
+    </script>
+</body>
+</html>
